@@ -1,355 +1,364 @@
-import React, { useState } from 'react';
-import { 
-  Shield, 
-  Plane, 
-  MapPin, 
-  Calendar, 
-  Mail, 
-  Hotel, 
-  Plus, 
-  Trash2, 
-  CheckCircle, 
-  AlertTriangle, 
-  FileText,
-  Loader2
-} from 'lucide-react';
-
-// --- N8N WEBHOOK URL ---
-// Replace this with your actual production URL
-const N8N_WEBHOOK_URL = 'https://dtts.app.n8n.cloud/webhook/eb47b7df-7354-44c2-a4fc-2499d1b37704';
-
-export default function App() {
-  // --- State Management ---
-  const [step, setStep] = useState('form'); // form | loading | result
-  const [reportHtml, setReportHtml] = useState('');
-  
-  // Form State
-  const [email, setEmail] = useState('');
-  const [dates, setDates] = useState({ from: '', to: '' });
-  const [destinations, setDestinations] = useState([{ id: 1, city: '', country: '' }]);
-  const [transport, setTransport] = useState({ airports: '', trains: '', buses: '' });
-  const [hotels, setHotels] = useState('');
-
-  // --- Handlers ---
-  const addDestination = () => {
-    setDestinations([...destinations, { id: Date.now(), city: '', country: '' }]);
-  };
-
-  const removeDestination = (id) => {
-    if (destinations.length > 1) {
-      setDestinations(destinations.filter(d => d.id !== id));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Risk Command</title>
+  <!-- Load Tailwind CSS for the modern design -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* Custom Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-  };
-
-  const updateDestination = (id, field, value) => {
-    setDestinations(destinations.map(d => d.id === id ? { ...d, [field]: value } : d));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStep('loading');
-
-    // Format data to match exactly what your n8n workflow expects
-    // Your n8n expects comma-separated strings for multi-locations
-    const payload = {
-      destination: destinations.map(d => d.city).join(', '),
-      country: destinations.map(d => d.country).join(', '), // Passing countries helps the AI context
-      dateFrom: dates.from,
-      dateTo: dates.to,
-      dates: `${dates.from} to ${dates.to}`, // Pre-formatted for convenience
-      recipientEmail: email,
-      airport: transport.airports,
-      trainStation: transport.trains,
-      busStation: transport.buses,
-      hotel: hotels
-    };
-
-    try {
-      const response = await fetch(N8N_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        // Assuming n8n uses "Respond to Webhook" node to return the JSON with { html: "..." }
-        const result = await response.json();
-        
-        // If n8n returns the HTML in a property called 'html' or just raw
-        const finalHtml = result.html || result.output || "Report generated and emailed successfully.";
-        setReportHtml(finalHtml);
-        setStep('result');
-      } else {
-        alert("Error connecting to security server.");
-        setStep('form');
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Network error. Please try again.");
-      setStep('form');
+    .animate-fadeIn {
+      animation: fadeIn 0.4s ease-out forwards;
     }
-  };
+    @keyframes progress {
+      0% { width: 0% }
+      100% { width: 100% }
+    }
+    .animate-progress {
+      animation: progress 45s ease-out forwards;
+    }
+    /* Print Styles */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; }
+      .shadow-2xl { box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-800">
 
-  // --- Render Functions ---
+  <!-- ==========================
+       1. LOGIN SCREEN
+       ========================== -->
+  <div id="login-screen" class="fixed inset-0 z-[9999] bg-slate-100 flex flex-col items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
+      <i data-lucide="lock" class="w-12 h-12 mx-auto text-slate-400 mb-4"></i>
+      <h3 class="text-xl font-bold text-slate-800 mb-2">Security Clearance</h3>
+      <p class="text-sm text-slate-500 mb-6">Enter access code to proceed.</p>
+      <form id="loginForm" class="space-y-4">
+        <input type="password" id="passwordInput" placeholder="Enter Password" 
+               class="w-full p-3 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-emerald-500 outline-none transition">
+        <button type="submit" 
+                class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition">
+          Unlock
+        </button>
+      </form>
+      <p id="loginError" class="text-red-500 text-sm mt-4 font-medium hidden"></p>
+    </div>
+  </div>
 
-  // 1. Form View
-  const renderForm = () => (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
-        <div className="bg-slate-900 p-6 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="w-8 h-8 text-emerald-400" />
-            <h1 className="text-2xl font-bold">Travel Risk Command</h1>
+  <!-- ==========================
+       2. MAIN APP CONTAINER
+       ========================== -->
+  <div id="main-app" class="hidden p-4 md:p-8">
+    
+    <!-- VIEW: FORM -->
+    <div id="view-form" class="max-w-2xl mx-auto animate-fadeIn">
+      <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
+        <!-- Header -->
+        <div class="bg-slate-900 p-6 text-white">
+          <div class="flex items-center gap-3 mb-2">
+            <i data-lucide="shield" class="w-8 h-8 text-emerald-400"></i>
+            <h1 class="text-2xl font-bold">Travel Risk Command</h1>
           </div>
-          <p className="text-slate-400">Generate expert security assessments for multi-leg journeys.</p>
+          <p class="text-slate-400">Generate expert security assessments for multi-leg journeys.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-8">
+        <form id="riskForm" class="p-6 space-y-8">
           
-          {/* Section: Traveller Info */}
+          <!-- Section: Contact -->
           <section>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Mail className="w-4 h-4" /> Contact Details
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i data-lucide="mail" class="w-4 h-4"></i> Contact Details
             </h3>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Recipient Email</label>
-              <input 
-                type="email" 
-                required
-                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                placeholder="security@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <label class="block text-sm font-medium text-slate-700 mb-1">Recipient Email</label>
+              <input type="email" name="recipientEmail" required placeholder="security@company.com"
+                     class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
             </div>
           </section>
 
-          {/* Section: Dates */}
+          <!-- Section: Dates -->
           <section>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Calendar className="w-4 h-4" /> Itinerary Dates
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i data-lucide="calendar" class="w-4 h-4"></i> Itinerary Dates
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-                <input 
-                  type="date" 
-                  required
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  value={dates.from}
-                  onChange={(e) => setDates({...dates, from: e.target.value})}
-                />
+                <label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+                <input type="date" name="dateFrom" required
+                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">End Date</label>
-                <input 
-                  type="date" 
-                  required
-                  min={dates.from}
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  value={dates.to}
-                  onChange={(e) => setDates({...dates, to: e.target.value})}
-                />
+                <label class="block text-sm font-medium text-slate-700 mb-1">End Date</label>
+                <input type="date" name="dateTo" required
+                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
               </div>
             </div>
           </section>
 
-          {/* Section: Destinations (Dynamic) */}
+          <!-- Section: Destinations (Dynamic) -->
           <section>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <MapPin className="w-4 h-4" /> Destinations
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4"></i> Destinations
               </h3>
-              <button 
-                type="button"
-                onClick={addDestination}
-                className="text-xs flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded-full transition"
-              >
-                <Plus className="w-3 h-3" /> Add Leg
+              <button type="button" id="addLegBtn"
+                      class="text-xs flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded-full transition font-medium">
+                <i data-lucide="plus" class="w-3 h-3"></i> Add Leg
               </button>
             </div>
             
-            <div className="space-y-3">
-              {destinations.map((dest, index) => (
-                <div key={dest.id} className="flex gap-3 items-start animate-fadeIn">
-                  <div className="flex-1">
-                    <input 
-                      type="text"
-                      placeholder="City (e.g. London)"
-                      required
-                      className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      value={dest.city}
-                      onChange={(e) => updateDestination(dest.id, 'city', e.target.value)}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <input 
-                      type="text"
-                      placeholder="Country (e.g. UK)"
-                      required
-                      className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      value={dest.country}
-                      onChange={(e) => updateDestination(dest.id, 'country', e.target.value)}
-                    />
-                  </div>
-                  {destinations.length > 1 && (
-                    <button 
-                      type="button" 
-                      onClick={() => removeDestination(dest.id)}
-                      className="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              ))}
+            <div id="destinations-container" class="space-y-3">
+              <!-- Rows will be injected here by JS -->
             </div>
           </section>
 
-          {/* Section: Logistics */}
+          <!-- Section: Logistics -->
           <section>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Plane className="w-4 h-4" /> Transport & Accommodation
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i data-lucide="plane" class="w-4 h-4"></i> Transport & Accommodation
             </h3>
-            <div className="space-y-4">
+            <div class="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Airports (Comma separated)</label>
-                <input 
-                  type="text"
-                  placeholder="e.g. LHR, JFK, DXB"
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  value={transport.airports}
-                  onChange={(e) => setTransport({...transport, airports: e.target.value})}
-                />
+                <label class="block text-sm font-medium text-slate-700 mb-1">Airports (Comma separated)</label>
+                <input type="text" name="airport" placeholder="e.g. LHR, JFK, DXB"
+                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Train Stations</label>
-                  <input 
-                    type="text"
-                    placeholder="e.g. Paddington"
-                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    value={transport.trains}
-                    onChange={(e) => setTransport({...transport, trains: e.target.value})}
-                  />
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Train Stations</label>
+                  <input type="text" name="trainStation" placeholder="e.g. Paddington"
+                         class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Bus Stations</label>
-                  <input 
-                    type="text"
-                    placeholder="e.g. Victoria Coach"
-                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                    value={transport.buses}
-                    onChange={(e) => setTransport({...transport, buses: e.target.value})}
-                  />
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Bus Stations</label>
+                  <input type="text" name="busStation" placeholder="e.g. Victoria Coach"
+                         class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
-                  <Hotel className="w-4 h-4" /> Hotels (Comma separated)
+                <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                  <i data-lucide="hotel" class="w-4 h-4"></i> Hotels (Comma separated)
                 </label>
-                <input 
-                  type="text"
-                  placeholder="e.g. The Ritz (London), Le Meurice (Paris)"
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  value={hotels}
-                  onChange={(e) => setHotels(e.target.value)}
-                />
+                <input type="text" name="hotel" placeholder="e.g. The Ritz (London), Le Meurice (Paris)"
+                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
               </div>
             </div>
           </section>
 
-          <button 
-            type="submit" 
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex justify-center items-center gap-2"
-          >
-            <FileText className="w-5 h-5" /> Generate Risk Assessment
+          <button type="submit" 
+                  class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex justify-center items-center gap-2">
+            <i data-lucide="file-text" class="w-5 h-5"></i> Generate Risk Assessment
           </button>
         </form>
       </div>
     </div>
-  );
 
-  // 2. Loading View
-  const renderLoading = () => (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
-      <div className="relative mb-8">
-        <div className="absolute inset-0 bg-emerald-200 rounded-full blur-xl opacity-50 animate-pulse"></div>
-        <Loader2 className="w-16 h-16 text-emerald-600 animate-spin relative z-10" />
+    <!-- VIEW: LOADING -->
+    <div id="view-loading" class="hidden flex flex-col items-center justify-center min-h-[60vh] text-center p-8 animate-fadeIn">
+      <div class="relative mb-8">
+        <div class="absolute inset-0 bg-emerald-200 rounded-full blur-xl opacity-50 animate-pulse"></div>
+        <i data-lucide="loader-2" class="w-16 h-16 text-emerald-600 animate-spin relative z-10"></i>
       </div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-2">Generating Intelligence Report</h2>
-      <p className="text-slate-500 max-w-md">
-        Our AI agents are scanning RSS feeds, local news, threat databases, and transport networks for {destinations.map(d => d.city).join(', ')}. 
-        <br/><span className="text-xs mt-2 block">(This usually takes 30-60 seconds)</span>
+      <h2 class="text-2xl font-bold text-slate-800 mb-2">Generating Intelligence Report</h2>
+      <p class="text-slate-500 max-w-md">
+        Our AI agents are scanning RSS feeds, local news, threat databases, and transport networks.<br>
+        <span class="text-xs mt-2 block">(This usually takes 30-60 seconds)</span>
       </p>
-      
-      <div className="mt-8 flex flex-col gap-2 w-64">
-        <div className="h-1 w-full bg-slate-200 rounded-full overflow-hidden">
-          <div className="h-full bg-emerald-500 animate-progress"></div>
+      <div class="mt-8 flex flex-col gap-2 w-64">
+        <div class="h-1 w-full bg-slate-200 rounded-full overflow-hidden">
+          <div class="h-full bg-emerald-500 animate-progress"></div>
         </div>
       </div>
     </div>
-  );
 
-  // 3. Result View
-  const renderResult = () => (
-    <div className="max-w-4xl mx-auto animate-fadeIn">
-      <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
-        <div className="bg-emerald-600 p-4 flex justify-between items-center text-white sticky top-0 z-50 shadow-md">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-6 h-6 text-emerald-200" />
-            <span className="font-bold">Report Generated</span>
+    <!-- VIEW: RESULT -->
+    <div id="view-result" class="hidden max-w-4xl mx-auto animate-fadeIn">
+      <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div class="bg-emerald-600 p-4 flex justify-between items-center text-white sticky top-0 z-50 shadow-md no-print">
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-6 h-6 text-emerald-200"></i>
+            <span class="font-bold">Report Generated</span>
           </div>
-          <div className="flex gap-3">
-             <button 
-              onClick={() => window.print()}
-              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
-            >
-              <FileText className="w-4 h-4" /> Save PDF
+          <div class="flex gap-3">
+             <button onclick="window.print()"
+                     class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+              <i data-lucide="printer" class="w-4 h-4"></i> Save PDF
             </button>
-            <button 
-              onClick={() => setStep('form')}
-              className="bg-white text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
+            <button onclick="resetApp()"
+                    class="bg-white text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-lg text-sm font-medium transition">
               New Report
             </button>
           </div>
         </div>
         
-        {/* We use dangerouslySetInnerHTML because your n8n workflow 
-           returns fully formatted HTML email content.
-           We wrap it in a 'prose' container for nice typography.
-        */}
-        <div className="p-8 md:p-12 bg-slate-50 min-h-screen">
-           <div 
-             className="prose prose-slate max-w-none bg-white p-10 shadow-sm border border-slate-200 rounded-lg"
-             dangerouslySetInnerHTML={{ __html: reportHtml }} 
-           />
+        <div class="p-8 md:p-12 bg-slate-50 min-h-screen">
+           <div id="report-content" class="prose prose-slate max-w-none bg-white p-10 shadow-sm border border-slate-200 rounded-lg">
+             <!-- Report HTML injected here -->
+           </div>
         </div>
       </div>
     </div>
-  );
 
-  return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans">
-      {step === 'form' && renderForm()}
-      {step === 'loading' && renderLoading()}
-      {step === 'result' && renderResult()}
+  </div>
+
+  <script>
+    // --- CONFIGURATION ---
+    const APP_PASSWORD = "WeAllWantToBeFree"; // 🔴 CHANGE THIS 🔴
+    const WEBHOOK_URL = "https://dtts.app.n8n.cloud/webhook/eb47b7df-7354-44c2-a4fc-2499d1b37704";
+    // ---------------------
+
+    // --- ICONS ---
+    lucide.createIcons();
+
+    // --- STATE ---
+    let destinations = [{ id: Date.now(), city: '', country: '' }];
+
+    // --- DOM ELEMENTS ---
+    const loginScreen = document.getElementById('login-screen');
+    const mainApp = document.getElementById('main-app');
+    const views = {
+      form: document.getElementById('view-form'),
+      loading: document.getElementById('view-loading'),
+      result: document.getElementById('view-result')
+    };
+    const destContainer = document.getElementById('destinations-container');
+    
+    // --- LOGIN LOGIC ---
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+      showApp();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pass = document.getElementById('passwordInput').value;
+      if (pass === APP_PASSWORD) {
+        sessionStorage.setItem('isLoggedIn', 'true');
+        showApp();
+      } else {
+        const err = document.getElementById('loginError');
+        err.textContent = "Incorrect password.";
+        err.classList.remove('hidden');
+      }
+    });
+
+    function showApp() {
+      loginScreen.style.display = 'none';
+      mainApp.style.display = 'block';
+      renderDestinations();
+    }
+
+    // --- DESTINATION LOGIC ---
+    function renderDestinations() {
+      destContainer.innerHTML = '';
+      destinations.forEach((dest, index) => {
+        const row = document.createElement('div');
+        row.className = 'flex gap-3 items-start animate-fadeIn';
+        row.innerHTML = `
+          <div class="flex-1">
+            <input type="text" placeholder="City (e.g. London)" required value="${dest.city}"
+                   class="city-input w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   onchange="updateDest(${dest.id}, 'city', this.value)">
+          </div>
+          <div class="flex-1">
+            <input type="text" placeholder="Country (e.g. UK)" required value="${dest.country}"
+                   class="country-input w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   onchange="updateDest(${dest.id}, 'country', this.value)">
+          </div>
+          ${destinations.length > 1 ? `
+            <button type="button" onclick="removeDest(${dest.id})"
+                    class="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+              <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </button>
+          ` : ''}
+        `;
+        destContainer.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    document.getElementById('addLegBtn').addEventListener('click', () => {
+      destinations.push({ id: Date.now(), city: '', country: '' });
+      renderDestinations();
+    });
+
+    window.removeDest = (id) => {
+      if (destinations.length > 1) {
+        destinations = destinations.filter(d => d.id !== id);
+        renderDestinations();
+      }
+    };
+
+    window.updateDest = (id, field, value) => {
+      destinations = destinations.map(d => d.id === id ? { ...d, [field]: value } : d);
+    };
+
+    // --- SUBMIT LOGIC ---
+    document.getElementById('riskForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      switchView('loading');
+
+      const formData = new FormData(e.target);
       
-      <style>{`
-        @keyframes progress {
-          0% { width: 0% }
-          100% { width: 100% }
+      // Prepare payload for n8n
+      const payload = {
+        destination: destinations.map(d => d.city).join(', '),
+        country: destinations.map(d => d.country).join(', '),
+        recipientEmail: formData.get('recipientEmail'),
+        dateFrom: formData.get('dateFrom'),
+        dateTo: formData.get('dateTo'),
+        dates: `${formData.get('dateFrom')} to ${formData.get('dateTo')}`,
+        airport: formData.get('airport'),
+        trainStation: formData.get('trainStation'),
+        busStation: formData.get('busStation'),
+        hotel: formData.get('hotel')
+      };
+
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          // Use the HTML returned by n8n, or fallback text
+          const htmlContent = result.html || result.output || "<p>Report sent to email.</p>";
+          document.getElementById('report-content').innerHTML = htmlContent;
+          switchView('result');
+        } else {
+          alert("Error generating report. Please check the server.");
+          switchView('form');
         }
-        .animate-progress {
-          animation: progress 45s ease-out forwards;
-        }
-        @media print {
-          .bg-slate-900, button { display: none !important; }
-          .bg-slate-100 { background: white !important; }
-          .shadow-2xl { shadow: none !important; }
-        }
-      `}</style>
-    </div>
-  );
-}
+      } catch (err) {
+        console.error(err);
+        alert("Network error.");
+        switchView('form');
+      }
+    });
+
+    function switchView(viewName) {
+      Object.values(views).forEach(el => el.classList.add('hidden'));
+      views[viewName].classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    window.resetApp = () => {
+      destinations = [{ id: Date.now(), city: '', country: '' }];
+      document.getElementById('riskForm').reset();
+      renderDestinations();
+      switchView('form');
+    };
+
+  </script>
+</body>
+</html>
