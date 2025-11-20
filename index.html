@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Travel Risk Command</title>
-  <!-- Load Tailwind CSS for the modern design -->
+  <!-- Load Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Load Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <style>
-    /* Custom Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -25,19 +24,15 @@
     .animate-progress {
       animation: progress 45s ease-out forwards;
     }
-    
-    /* --- MOBILE TABLE FIX --- */
-    /* This forces tables to scroll sideways on phones instead of breaking the layout */
+    /* Mobile table scroll fix */
     #report-content table {
       display: block;
       width: 100%;
       overflow-x: auto;
-      -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+      -webkit-overflow-scrolling: touch;
       margin-bottom: 1rem;
       border-radius: 6px;
     }
-
-    /* Print Styles */
     @media print {
       .no-print { display: none !important; }
       body { background: white !important; }
@@ -48,9 +43,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen font-sans text-slate-800">
 
-  <!-- ==========================
-       1. LOGIN SCREEN
-       ========================== -->
+  <!-- LOGIN SCREEN -->
   <div id="login-screen" class="fixed inset-0 z-[9999] bg-slate-100 flex flex-col items-center justify-center p-4">
     <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
       <i data-lucide="lock" class="w-12 h-12 mx-auto text-slate-400 mb-4"></i>
@@ -68,15 +61,12 @@
     </div>
   </div>
 
-  <!-- ==========================
-       2. MAIN APP CONTAINER
-       ========================== -->
+  <!-- MAIN APP -->
   <div id="main-app" class="hidden p-4 md:p-8">
     
     <!-- VIEW: FORM -->
     <div id="view-form" class="max-w-2xl mx-auto animate-fadeIn">
       <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
-        <!-- Header -->
         <div class="bg-slate-900 p-6 text-white">
           <div class="flex items-center gap-3 mb-2">
             <i data-lucide="shield" class="w-8 h-8 text-emerald-400"></i>
@@ -87,7 +77,7 @@
 
         <form id="riskForm" class="p-6 space-y-8">
           
-          <!-- Section: Contact -->
+          <!-- CONTACT -->
           <section>
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
               <i data-lucide="mail" class="w-4 h-4"></i> Contact Details
@@ -99,7 +89,7 @@
             </div>
           </section>
 
-          <!-- Section: Dates -->
+          <!-- DATES -->
           <section>
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
               <i data-lucide="calendar" class="w-4 h-4"></i> Itinerary Dates
@@ -118,54 +108,72 @@
             </div>
           </section>
 
-          <!-- Section: Destinations (Dynamic) -->
+          <!-- DESTINATIONS -->
           <section>
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <i data-lucide="map-pin" class="w-4 h-4"></i> Destinations
               </h3>
-              <button type="button" id="addLegBtn"
+              <button type="button" onclick="addLeg()"
                       class="text-xs flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded-full transition font-medium">
                 <i data-lucide="plus" class="w-3 h-3"></i> Add Leg
               </button>
             </div>
-            
-            <div id="destinations-container" class="space-y-3">
-              <!-- Rows will be injected here by JS -->
-            </div>
+            <div id="destinations-container" class="space-y-3"></div>
           </section>
 
-          <!-- Section: Logistics -->
+          <!-- TRANSPORT & ACCOMMODATION -->
           <section>
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
               <i data-lucide="plane" class="w-4 h-4"></i> Transport & Accommodation
             </h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Airports (Comma separated)</label>
-                <input type="text" name="airport" placeholder="e.g. LHR, JFK, DXB"
-                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+
+            <!-- Airports -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <label class="block text-sm font-medium text-slate-700">Airports</label>
+                <button type="button" onclick="addDynamicItem('airports')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                  + Add
+                </button>
               </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1">Train Stations</label>
-                  <input type="text" name="trainStation" placeholder="e.g. Paddington"
-                         class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1">Bus Stations</label>
-                  <input type="text" name="busStation" placeholder="e.g. Victoria Coach"
-                         class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
-                  <i data-lucide="hotel" class="w-4 h-4"></i> Hotels (Comma separated)
-                </label>
-                <input type="text" name="hotel" placeholder="e.g. The Ritz (London), Le Meurice (Paris)"
-                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-              </div>
+              <div id="airports-container" class="space-y-2"></div>
             </div>
+
+            <!-- Trains -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <label class="block text-sm font-medium text-slate-700">Train Stations</label>
+                <button type="button" onclick="addDynamicItem('trains')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                  + Add
+                </button>
+              </div>
+              <div id="trains-container" class="space-y-2"></div>
+            </div>
+
+            <!-- Buses -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <label class="block text-sm font-medium text-slate-700">Bus Stations</label>
+                <button type="button" onclick="addDynamicItem('buses')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                  + Add
+                </button>
+              </div>
+              <div id="buses-container" class="space-y-2"></div>
+            </div>
+
+            <!-- Hotels -->
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-2">
+                <label class="block text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <i data-lucide="hotel" class="w-4 h-4 text-slate-400"></i> Hotels
+                </label>
+                <button type="button" onclick="addDynamicItem('hotels')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                  + Add
+                </button>
+              </div>
+              <div id="hotels-container" class="space-y-2"></div>
+            </div>
+
           </section>
 
           <button type="submit" 
@@ -215,27 +223,27 @@
         </div>
         
         <div class="p-8 md:p-12 bg-slate-50 min-h-screen">
-           <!-- Added 'prose-table:block' to help Tailwind typography -->
-           <div id="report-content" class="prose prose-slate max-w-none bg-white p-4 md:p-10 shadow-sm border border-slate-200 rounded-lg">
-             <!-- Report HTML injected here -->
-           </div>
+           <div id="report-content" class="prose prose-slate max-w-none bg-white p-4 md:p-10 shadow-sm border border-slate-200 rounded-lg"></div>
         </div>
       </div>
     </div>
-
   </div>
 
   <script>
     // --- CONFIGURATION ---
-    const APP_PASSWORD = "WeAllWantToBeFree"; // 🔴 CHANGE THIS 🔴
+    const APP_PASSWORD = "TravelSafe2025"; 
     const WEBHOOK_URL = "https://dtts.app.n8n.cloud/webhook/eb47b7df-7354-44c2-a4fc-2499d1b37704";
     // ---------------------
 
-    // --- ICONS ---
-    lucide.createIcons();
-
-    // --- STATE ---
-    let destinations = [{ id: Date.now(), city: '', country: '' }];
+    // --- STATE MANAGEMENT ---
+    // Separate arrays for each dynamic section
+    const state = {
+      destinations: [{ id: Date.now(), city: '', country: '' }],
+      airports: [{ id: Date.now() + 1, value: '' }],
+      trains: [{ id: Date.now() + 2, value: '' }],
+      buses: [{ id: Date.now() + 3, value: '' }],
+      hotels: [{ id: Date.now() + 4, value: '' }]
+    };
 
     // --- DOM ELEMENTS ---
     const loginScreen = document.getElementById('login-screen');
@@ -245,85 +253,138 @@
       loading: document.getElementById('view-loading'),
       result: document.getElementById('view-result')
     };
-    const destContainer = document.getElementById('destinations-container');
-    
-    // --- LOGIN LOGIC ---
-    if (sessionStorage.getItem('isLoggedIn') === 'true') {
-      showApp();
-    }
+
+    // --- INIT & LOGIN ---
+    if (sessionStorage.getItem('isLoggedIn') === 'true') showApp();
 
     document.getElementById('loginForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const pass = document.getElementById('passwordInput').value;
-      if (pass === APP_PASSWORD) {
+      if (document.getElementById('passwordInput').value === APP_PASSWORD) {
         sessionStorage.setItem('isLoggedIn', 'true');
         showApp();
       } else {
-        const err = document.getElementById('loginError');
-        err.textContent = "Incorrect password.";
-        err.classList.remove('hidden');
+        document.getElementById('loginError').textContent = "Incorrect password.";
+        document.getElementById('loginError').classList.remove('hidden');
       }
     });
 
     function showApp() {
       loginScreen.style.display = 'none';
       mainApp.style.display = 'block';
-      renderDestinations();
+      renderAllLists();
     }
 
-    // --- DESTINATION LOGIC ---
+    // --- RENDER LOGIC ---
+
+    function renderAllLists() {
+      renderDestinations();
+      renderSimpleList('airports', 'e.g. LHR, JFK', 'plane');
+      renderSimpleList('trains', 'e.g. Paddington', 'train-front'); // lucide icon names
+      renderSimpleList('buses', 'e.g. Victoria Coach', 'bus');
+      renderSimpleList('hotels', 'e.g. The Ritz', 'bed');
+    }
+
+    // 1. Destinations (City + Country)
     function renderDestinations() {
-      destContainer.innerHTML = '';
-      destinations.forEach((dest, index) => {
+      const container = document.getElementById('destinations-container');
+      container.innerHTML = '';
+      state.destinations.forEach((dest) => {
         const row = document.createElement('div');
         row.className = 'flex gap-3 items-start animate-fadeIn';
         row.innerHTML = `
           <div class="flex-1">
             <input type="text" placeholder="City (e.g. London)" required value="${dest.city}"
-                   class="city-input w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                    onchange="updateDest(${dest.id}, 'city', this.value)">
           </div>
           <div class="flex-1">
             <input type="text" placeholder="Country (e.g. UK)" required value="${dest.country}"
-                   class="country-input w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                    onchange="updateDest(${dest.id}, 'country', this.value)">
           </div>
-          ${destinations.length > 1 ? `
+          ${state.destinations.length > 1 ? `
             <button type="button" onclick="removeDest(${dest.id})"
                     class="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
               <i data-lucide="trash-2" class="w-5 h-5"></i>
             </button>
           ` : ''}
         `;
-        destContainer.appendChild(row);
+        container.appendChild(row);
       });
       lucide.createIcons();
     }
 
-    document.getElementById('addLegBtn').addEventListener('click', () => {
-      destinations.push({ id: Date.now(), city: '', country: '' });
-      renderDestinations();
-    });
+    // 2. Simple Lists (Airport, Train, Bus, Hotel)
+    function renderSimpleList(type, placeholder, iconName) {
+      const container = document.getElementById(`${type}-container`);
+      container.innerHTML = '';
+      state[type].forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 items-center animate-fadeIn';
+        row.innerHTML = `
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i data-lucide="${iconName}" class="h-4 w-4 text-gray-400"></i>
+            </div>
+            <input type="text" value="${item.value}" placeholder="${placeholder}"
+                   class="w-full pl-10 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   onchange="updateSimpleItem('${type}', ${item.id}, this.value)">
+          </div>
+          ${state[type].length > 1 ? `
+            <button type="button" onclick="removeSimpleItem('${type}', ${item.id})"
+                    class="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+              <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </button>
+          ` : ''}
+        `;
+        container.appendChild(row);
+      });
+      lucide.createIcons();
+    }
 
+    // --- STATE HELPERS ---
+    window.addLeg = () => {
+      state.destinations.push({ id: Date.now(), city: '', country: '' });
+      renderDestinations();
+    };
     window.removeDest = (id) => {
-      if (destinations.length > 1) {
-        destinations = destinations.filter(d => d.id !== id);
+      if (state.destinations.length > 1) {
+        state.destinations = state.destinations.filter(d => d.id !== id);
         renderDestinations();
       }
     };
-
-    window.updateDest = (id, field, value) => {
-      destinations = destinations.map(d => d.id === id ? { ...d, [field]: value } : d);
+    window.updateDest = (id, field, val) => {
+      const target = state.destinations.find(d => d.id === id);
+      if (target) target[field] = val;
     };
 
-    // --- SUBMIT LOGIC ---
+    // Generic helpers for the simple lists
+    window.addDynamicItem = (type) => {
+      state[type].push({ id: Date.now(), value: '' });
+      renderAllLists();
+    };
+    window.removeSimpleItem = (type, id) => {
+      if (state[type].length > 1) {
+        state[type] = state[type].filter(i => i.id !== id);
+        renderAllLists();
+      }
+    };
+    window.updateSimpleItem = (type, id, val) => {
+      const target = state[type].find(i => i.id === id);
+      if (target) target.value = val;
+    };
+
+    // --- SUBMIT ---
     document.getElementById('riskForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       switchView('loading');
 
       const formData = new FormData(e.target);
       
-      // Date formatting helper: ISO (YYYY-MM-DD) to UK (DD/MM/YYYY)
+      // Helper to join array values into comma-separated string for n8n
+      const joinValues = (list) => list.map(i => i.value).filter(v => v.trim() !== '').join(', ');
+
+      // Date formatting helper (YYYY-MM-DD -> DD/MM/YYYY)
       const formatDateUK = (dateStr) => {
         if (!dateStr) return '';
         const [year, month, day] = dateStr.split('-');
@@ -333,19 +394,19 @@
       const dateFromISO = formData.get('dateFrom');
       const dateToISO = formData.get('dateTo');
 
-      // Prepare payload for n8n
       const payload = {
-        destination: destinations.map(d => d.city).join(', '),
-        country: destinations.map(d => d.country).join(', '),
+        destination: state.destinations.map(d => d.city).join(', '),
+        country: state.destinations.map(d => d.country).join(', '),
         recipientEmail: formData.get('recipientEmail'),
         dateFrom: dateFromISO,
         dateTo: dateToISO,
-        // Send specifically formatted string to AI
         dates: `${formatDateUK(dateFromISO)} to ${formatDateUK(dateToISO)}`,
-        airport: formData.get('airport'),
-        trainStation: formData.get('trainStation'),
-        busStation: formData.get('busStation'),
-        hotel: formData.get('hotel')
+        
+        // Send joined strings to n8n (e.g. "LHR, JFK")
+        airport: joinValues(state.airports),
+        trainStation: joinValues(state.trains),
+        busStation: joinValues(state.buses),
+        hotel: joinValues(state.hotels)
       };
 
       try {
@@ -357,7 +418,6 @@
 
         if (res.ok) {
           const result = await res.json();
-          // Use the HTML returned by n8n, or fallback text
           const htmlContent = result.html || result.output || "<p>Report sent to email.</p>";
           document.getElementById('report-content').innerHTML = htmlContent;
           switchView('result');
@@ -379,12 +439,17 @@
     }
 
     window.resetApp = () => {
-      destinations = [{ id: Date.now(), city: '', country: '' }];
+      // Reset state to initial
+      state.destinations = [{ id: Date.now(), city: '', country: '' }];
+      state.airports = [{ id: Date.now()+1, value: '' }];
+      state.trains = [{ id: Date.now()+2, value: '' }];
+      state.buses = [{ id: Date.now()+3, value: '' }];
+      state.hotels = [{ id: Date.now()+4, value: '' }];
+      
       document.getElementById('riskForm').reset();
-      renderDestinations();
+      renderAllLists();
       switchView('form');
     };
-
   </script>
 </body>
 </html>
