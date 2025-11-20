@@ -4,11 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Travel Risk Command</title>
+  
   <!-- Load Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class', // Enable manual dark mode toggle
+    }
+  </script>
+  
   <!-- Load Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  
   <style>
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -33,25 +41,45 @@
       margin-bottom: 1rem;
       border-radius: 6px;
     }
+    /* Dark mode table fixes */
+    .dark #report-content table {
+      color: #e2e8f0;
+    }
+    .dark #report-content th {
+      background-color: #1e293b;
+      color: #f1f5f9;
+    }
+    .dark #report-content td {
+      border-color: #334155;
+    }
+    
     @media print {
       .no-print { display: none !important; }
-      body { background: white !important; }
+      body { background: white !important; color: black !important; }
       .shadow-2xl { box-shadow: none !important; }
       #report-content { padding: 0 !important; border: none !important; }
     }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-slate-800">
+<body class="bg-slate-100 dark:bg-slate-950 min-h-screen font-sans text-slate-800 dark:text-slate-200 transition-colors duration-300">
+
+  <!-- DARK MODE TOGGLE (Fixed Top Right) -->
+  <button id="theme-toggle" class="fixed top-4 right-4 z-[10000] p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-lg hover:scale-110 transition-transform border border-slate-200 dark:border-slate-700">
+    <!-- Sun Icon (Hidden in Dark Mode) -->
+    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+    <!-- Moon Icon (Hidden in Light Mode) -->
+    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+  </button>
 
   <!-- LOGIN SCREEN -->
-  <div id="login-screen" class="fixed inset-0 z-[9999] bg-slate-100 flex flex-col items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-center border border-slate-200">
+  <div id="login-screen" class="fixed inset-0 z-[9999] bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-center p-4 transition-colors duration-300">
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-sm text-center border border-slate-200 dark:border-slate-700">
       <i data-lucide="lock" class="w-12 h-12 mx-auto text-slate-400 mb-4"></i>
-      <h3 class="text-xl font-bold text-slate-800 mb-2">Security Clearance</h3>
-      <p class="text-sm text-slate-500 mb-6">Enter access code to proceed.</p>
+      <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Security Clearance</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Enter access code to proceed.</p>
       <form id="loginForm" class="space-y-4">
         <input type="password" id="passwordInput" placeholder="Enter Password" 
-               class="w-full p-3 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-emerald-500 outline-none transition">
+               class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg text-center focus:ring-2 focus:ring-emerald-500 outline-none transition bg-white dark:bg-slate-700 dark:text-white dark:placeholder-slate-400">
         <button type="submit" 
                 class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition">
           Unlock
@@ -66,8 +94,8 @@
     
     <!-- VIEW: FORM -->
     <div id="view-form" class="max-w-2xl mx-auto animate-fadeIn">
-      <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
-        <div class="bg-slate-900 p-6 text-white">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700 transition-colors duration-300">
+        <div class="bg-slate-900 dark:bg-black p-6 text-white">
           <div class="flex items-center gap-3 mb-2">
             <i data-lucide="shield" class="w-8 h-8 text-emerald-400"></i>
             <h1 class="text-2xl font-bold">Travel Risk Command</h1>
@@ -83,9 +111,9 @@
               <i data-lucide="mail" class="w-4 h-4"></i> Contact Details
             </h3>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Recipient Email</label>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Recipient Email</label>
               <input type="email" name="recipientEmail" required placeholder="security@company.com"
-                     class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                     class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-700 dark:text-white">
             </div>
           </section>
 
@@ -96,14 +124,14 @@
             </h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Start Date</label>
                 <input type="date" name="dateFrom" required
-                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                       class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-700 dark:text-white">
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">End Date</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">End Date</label>
                 <input type="date" name="dateTo" required
-                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                       class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-700 dark:text-white">
               </div>
             </div>
           </section>
@@ -115,7 +143,7 @@
                 <i data-lucide="map-pin" class="w-4 h-4"></i> Destinations
               </h3>
               <button type="button" onclick="addLeg()"
-                      class="text-xs flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded-full transition font-medium">
+                      class="text-xs flex items-center gap-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full transition font-medium">
                 <i data-lucide="plus" class="w-3 h-3"></i> Add Leg
               </button>
             </div>
@@ -131,8 +159,8 @@
             <!-- Airports -->
             <div class="mb-6">
               <div class="flex justify-between items-center mb-2">
-                <label class="block text-sm font-medium text-slate-700">Airports</label>
-                <button type="button" onclick="addDynamicItem('airports')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Airports</label>
+                <button type="button" onclick="addDynamicItem('airports')" class="text-xs bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400 px-2 py-1 rounded border dark:border-slate-600">
                   + Add
                 </button>
               </div>
@@ -142,8 +170,8 @@
             <!-- Trains -->
             <div class="mb-6">
               <div class="flex justify-between items-center mb-2">
-                <label class="block text-sm font-medium text-slate-700">Train Stations</label>
-                <button type="button" onclick="addDynamicItem('trains')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Train Stations</label>
+                <button type="button" onclick="addDynamicItem('trains')" class="text-xs bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400 px-2 py-1 rounded border dark:border-slate-600">
                   + Add
                 </button>
               </div>
@@ -153,8 +181,8 @@
             <!-- Buses -->
             <div class="mb-6">
               <div class="flex justify-between items-center mb-2">
-                <label class="block text-sm font-medium text-slate-700">Bus Stations</label>
-                <button type="button" onclick="addDynamicItem('buses')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Bus Stations</label>
+                <button type="button" onclick="addDynamicItem('buses')" class="text-xs bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400 px-2 py-1 rounded border dark:border-slate-600">
                   + Add
                 </button>
               </div>
@@ -164,10 +192,10 @@
             <!-- Hotels -->
             <div class="mb-4">
               <div class="flex justify-between items-center mb-2">
-                <label class="block text-sm font-medium text-slate-700 flex items-center gap-2">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
                   <i data-lucide="hotel" class="w-4 h-4 text-slate-400"></i> Hotels
                 </label>
-                <button type="button" onclick="addDynamicItem('hotels')" class="text-xs bg-slate-50 hover:bg-slate-100 text-slate-500 px-2 py-1 rounded border">
+                <button type="button" onclick="addDynamicItem('hotels')" class="text-xs bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400 px-2 py-1 rounded border dark:border-slate-600">
                   + Add
                 </button>
               </div>
@@ -190,13 +218,13 @@
         <div class="absolute inset-0 bg-emerald-200 rounded-full blur-xl opacity-50 animate-pulse"></div>
         <i data-lucide="loader-2" class="w-16 h-16 text-emerald-600 animate-spin relative z-10"></i>
       </div>
-      <h2 class="text-2xl font-bold text-slate-800 mb-2">Hold Tight!</h2>
-      <p class="text-slate-500 max-w-md">
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Hold Tight!</h2>
+      <p class="text-slate-500 dark:text-slate-400 max-w-md">
         Your travel report will be with you shortly.<br>
         <span class="text-xs mt-2 block">(This usually takes 30-60 seconds)</span>
       </p>
       <div class="mt-8 flex flex-col gap-2 w-64">
-        <div class="h-1 w-full bg-slate-200 rounded-full overflow-hidden">
+        <div class="h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
           <div class="h-full bg-emerald-500 animate-progress"></div>
         </div>
       </div>
@@ -204,7 +232,7 @@
 
     <!-- VIEW: RESULT -->
     <div id="view-result" class="hidden max-w-4xl mx-auto animate-fadeIn">
-      <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl overflow-hidden">
         <div class="bg-emerald-600 p-4 flex justify-between items-center text-white sticky top-0 z-50 shadow-md no-print">
           <div class="flex items-center gap-2">
             <i data-lucide="check-circle" class="w-6 h-6 text-emerald-200"></i>
@@ -222,8 +250,8 @@
           </div>
         </div>
         
-        <div class="p-8 md:p-12 bg-slate-50 min-h-screen">
-           <div id="report-content" class="prose prose-slate max-w-none bg-white p-4 md:p-10 shadow-sm border border-slate-200 rounded-lg"></div>
+        <div class="p-8 md:p-12 bg-slate-50 dark:bg-slate-900 min-h-screen">
+           <div id="report-content" class="prose prose-slate dark:prose-invert max-w-none bg-white dark:bg-slate-800 p-4 md:p-10 shadow-sm border border-slate-200 dark:border-slate-700 rounded-lg"></div>
         </div>
       </div>
     </div>
@@ -231,12 +259,33 @@
 
   <script>
     // --- CONFIGURATION ---
-    const APP_PASSWORD = "TravelSafe2025"; 
+    const APP_PASSWORD = "WeAllWantToBeFree"; 
     const WEBHOOK_URL = "https://dtts.app.n8n.cloud/webhook/eb47b7df-7354-44c2-a4fc-2499d1b37704";
     // ---------------------
 
+    // --- DARK MODE LOGIC ---
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    // Check local storage or system preference
+    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    themeToggle.addEventListener('click', () => {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('color-theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('color-theme', 'dark');
+      }
+      // Refresh icons after theme change if needed
+      lucide.createIcons(); 
+    });
+
     // --- STATE MANAGEMENT ---
-    // Separate arrays for each dynamic section
     const state = {
       destinations: [{ id: Date.now(), city: '', country: '' }],
       airports: [{ id: Date.now() + 1, value: '' }],
@@ -272,6 +321,7 @@
       loginScreen.style.display = 'none';
       mainApp.style.display = 'block';
       renderAllLists();
+      lucide.createIcons();
     }
 
     // --- RENDER LOGIC ---
@@ -279,12 +329,12 @@
     function renderAllLists() {
       renderDestinations();
       renderSimpleList('airports', 'e.g. LHR, JFK', 'plane');
-      renderSimpleList('trains', 'e.g. Paddington', 'train-front'); // lucide icon names
+      renderSimpleList('trains', 'e.g. Paddington', 'train-front'); 
       renderSimpleList('buses', 'e.g. Victoria Coach', 'bus');
       renderSimpleList('hotels', 'e.g. The Ritz', 'bed');
     }
 
-    // 1. Destinations (City + Country)
+    // 1. Destinations
     function renderDestinations() {
       const container = document.getElementById('destinations-container');
       container.innerHTML = '';
@@ -294,17 +344,17 @@
         row.innerHTML = `
           <div class="flex-1">
             <input type="text" placeholder="City (e.g. London)" required value="${dest.city}"
-                   class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-700 dark:text-white"
                    onchange="updateDest(${dest.id}, 'city', this.value)">
           </div>
           <div class="flex-1">
             <input type="text" placeholder="Country (e.g. UK)" required value="${dest.country}"
-                   class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-700 dark:text-white"
                    onchange="updateDest(${dest.id}, 'country', this.value)">
           </div>
           ${state.destinations.length > 1 ? `
             <button type="button" onclick="removeDest(${dest.id})"
-                    class="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                    class="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-lg transition">
               <i data-lucide="trash-2" class="w-5 h-5"></i>
             </button>
           ` : ''}
@@ -314,7 +364,7 @@
       lucide.createIcons();
     }
 
-    // 2. Simple Lists (Airport, Train, Bus, Hotel)
+    // 2. Simple Lists
     function renderSimpleList(type, placeholder, iconName) {
       const container = document.getElementById(`${type}-container`);
       container.innerHTML = '';
@@ -327,12 +377,12 @@
               <i data-lucide="${iconName}" class="h-4 w-4 text-gray-400"></i>
             </div>
             <input type="text" value="${item.value}" placeholder="${placeholder}"
-                   class="w-full pl-10 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                   class="w-full pl-10 p-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-700 dark:text-white"
                    onchange="updateSimpleItem('${type}', ${item.id}, this.value)">
           </div>
           ${state[type].length > 1 ? `
             <button type="button" onclick="removeSimpleItem('${type}', ${item.id})"
-                    class="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                    class="p-3 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 rounded-lg transition">
               <i data-lucide="trash-2" class="w-5 h-5"></i>
             </button>
           ` : ''}
@@ -358,7 +408,6 @@
       if (target) target[field] = val;
     };
 
-    // Generic helpers for the simple lists
     window.addDynamicItem = (type) => {
       state[type].push({ id: Date.now(), value: '' });
       renderAllLists();
@@ -381,10 +430,8 @@
 
       const formData = new FormData(e.target);
       
-      // Helper to join array values into comma-separated string for n8n
       const joinValues = (list) => list.map(i => i.value).filter(v => v.trim() !== '').join(', ');
 
-      // Date formatting helper (YYYY-MM-DD -> DD/MM/YYYY)
       const formatDateUK = (dateStr) => {
         if (!dateStr) return '';
         const [year, month, day] = dateStr.split('-');
@@ -401,8 +448,6 @@
         dateFrom: dateFromISO,
         dateTo: dateToISO,
         dates: `${formatDateUK(dateFromISO)} to ${formatDateUK(dateToISO)}`,
-        
-        // Send joined strings to n8n (e.g. "LHR, JFK")
         airport: joinValues(state.airports),
         trainStation: joinValues(state.trains),
         busStation: joinValues(state.buses),
@@ -439,7 +484,6 @@
     }
 
     window.resetApp = () => {
-      // Reset state to initial
       state.destinations = [{ id: Date.now(), city: '', country: '' }];
       state.airports = [{ id: Date.now()+1, value: '' }];
       state.trains = [{ id: Date.now()+2, value: '' }];
