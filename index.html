@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -308,14 +308,25 @@
 
       const formData = new FormData(e.target);
       
+      // Date formatting helper: ISO (YYYY-MM-DD) to UK (DD/MM/YYYY)
+      const formatDateUK = (dateStr) => {
+        if (!dateStr) return '';
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+      };
+
+      const dateFromISO = formData.get('dateFrom');
+      const dateToISO = formData.get('dateTo');
+
       // Prepare payload for n8n
       const payload = {
         destination: destinations.map(d => d.city).join(', '),
         country: destinations.map(d => d.country).join(', '),
         recipientEmail: formData.get('recipientEmail'),
-        dateFrom: formData.get('dateFrom'),
-        dateTo: formData.get('dateTo'),
-        dates: `${formData.get('dateFrom')} to ${formData.get('dateTo')}`,
+        dateFrom: dateFromISO,
+        dateTo: dateToISO,
+        // Send specifically formatted string to AI
+        dates: `${formatDateUK(dateFromISO)} to ${formatDateUK(dateToISO)}`,
         airport: formData.get('airport'),
         trainStation: formData.get('trainStation'),
         busStation: formData.get('busStation'),
