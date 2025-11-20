@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Load Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <style>
     /* Custom Animations */
     @keyframes fadeIn {
@@ -24,11 +25,24 @@
     .animate-progress {
       animation: progress 45s ease-out forwards;
     }
+    
+    /* --- MOBILE TABLE FIX --- */
+    /* This forces tables to scroll sideways on phones instead of breaking the layout */
+    #report-content table {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* Smooth scroll on iPhone */
+      margin-bottom: 1rem;
+      border-radius: 6px;
+    }
+
     /* Print Styles */
     @media print {
       .no-print { display: none !important; }
       body { background: white !important; }
       .shadow-2xl { box-shadow: none !important; }
+      #report-content { padding: 0 !important; border: none !important; }
     }
   </style>
 </head>
@@ -168,9 +182,9 @@
         <div class="absolute inset-0 bg-emerald-200 rounded-full blur-xl opacity-50 animate-pulse"></div>
         <i data-lucide="loader-2" class="w-16 h-16 text-emerald-600 animate-spin relative z-10"></i>
       </div>
-      <h2 class="text-2xl font-bold text-slate-800 mb-2">Generating Intelligence Report</h2>
+      <h2 class="text-2xl font-bold text-slate-800 mb-2">Hold Tight!</h2>
       <p class="text-slate-500 max-w-md">
-        Our AI agents are scanning RSS feeds, local news, threat databases, and transport networks.<br>
+        Your travel report will be with you shortly.<br>
         <span class="text-xs mt-2 block">(This usually takes 30-60 seconds)</span>
       </p>
       <div class="mt-8 flex flex-col gap-2 w-64">
@@ -201,7 +215,8 @@
         </div>
         
         <div class="p-8 md:p-12 bg-slate-50 min-h-screen">
-           <div id="report-content" class="prose prose-slate max-w-none bg-white p-10 shadow-sm border border-slate-200 rounded-lg">
+           <!-- Added 'prose-table:block' to help Tailwind typography -->
+           <div id="report-content" class="prose prose-slate max-w-none bg-white p-4 md:p-10 shadow-sm border border-slate-200 rounded-lg">
              <!-- Report HTML injected here -->
            </div>
         </div>
@@ -212,7 +227,7 @@
 
   <script>
     // --- CONFIGURATION ---
-    const APP_PASSWORD = "WeAllWantToBeFree"; // 🔴 CHANGE THIS 🔴
+    const APP_PASSWORD = "TravelSafe2025"; // 🔴 CHANGE THIS 🔴
     const WEBHOOK_URL = "https://dtts.app.n8n.cloud/webhook/eb47b7df-7354-44c2-a4fc-2499d1b37704";
     // ---------------------
 
